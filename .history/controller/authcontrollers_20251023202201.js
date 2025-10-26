@@ -3,7 +3,7 @@
 
 const db = require('../db');
 const bcrypt = require('bcryptjs');
-const sendotp = require('../utils/sendotp');
+const sendOtp = require('../utils/sendOtp');
 
 // Register user and send OTP
 const register = async (req, res) => {
@@ -31,7 +31,7 @@ const register = async (req, res) => {
       }
 
       try {
-        await sendotp(email, otp);
+        await sendOtp(email, otp);
         console.log(` OTP sent to ${email}`);
         res.status(200).json({ message: 'OTP sent to email' });
       } catch (emailErr) {

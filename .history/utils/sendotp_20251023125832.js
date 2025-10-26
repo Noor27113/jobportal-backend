@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendotp = async (email, otp) => {
+const sendOtp = async (email, otp) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -29,4 +29,4 @@ const sendotp = async (email, otp) => {
   }
 };
 
-module.exports = sendotp;
+module.exports = sendOtp;
