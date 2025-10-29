@@ -1,5 +1,5 @@
 // 🌐 Environment Setup
-require('dotenv').config({
+require('dotenv').Config({
   path: process.env.NODE_ENV === 'production' ? '.env.railway' : '.env.local'
 });
 console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
