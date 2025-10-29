@@ -1,10 +1,10 @@
-const db = require('../db');
+const db = require('../config/db'); 
 const bcrypt = require('bcryptjs');
 const sendotp = require('../utils/sendotp');
 
-// ─── Register ─────────────────────────────────────────────────
+//  Register 
 const register = async (req, res) => {
-  console.log('📥 Register route triggered');
+  console.log(' Register route triggered');
   const { name, email, phone, password } = req.body;
 
   if (!name || !email || !phone || !password) {
@@ -28,16 +28,17 @@ const register = async (req, res) => {
     );
 
     await sendotp(email, otp);
-    console.log(`✅ OTP sent to ${email}`);
+    console.log(` OTP sent to ${email}`);
     res.status(200).json({ message: 'OTP sent to email' });
   } catch (err) {
-    console.error('❌ Registration error:', err.message);
+    console.error(' Registration error:', err.message);
     res.status(500).json({ error: 'Server error during registration' });
   }
 };
 
-// ─── Verify OTP ───────────────────────────────────────────────
+//  Verify OTP 
 const verifyOtp = async (req, res) => {
+  console.log('🔐 Verifying OTP...');
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -62,16 +63,17 @@ const verifyOtp = async (req, res) => {
       [email]
     );
 
-    console.log(`✅ Email verified: ${email}`);
+    console.log(` Email verified: ${email}`);
     res.status(200).json({ message: 'Email verified successfully' });
   } catch (err) {
-    console.error('❌ OTP verification error:', err.message);
+    console.error(' OTP verification error:', err.message);
     res.status(500).json({ message: 'Server error during OTP verification' });
   }
 };
 
-// ─── Login ────────────────────────────────────────────────────
+//  Login
 const login = async (req, res) => {
+  console.log(' Login attempt...');
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -95,10 +97,10 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    console.log(`✅ Login successful: ${email}`);
+    console.log(`Login successful: ${email}`);
     res.status(200).json({ message: 'Login successful' });
   } catch (err) {
-    console.error('❌ Login error:', err.message);
+    console.error(' Login error:', err.message);
     res.status(500).json({ message: 'Server error during login' });
   }
 };

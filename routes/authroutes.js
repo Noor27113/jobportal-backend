@@ -6,12 +6,12 @@ const {
   login
 } = require('../controller/authcontrollers');
 
-// ─── Auth Routes ──────────────────────────────────────────────
+// Auth Routes 
 router.post('/register', register);
 router.post('/verify-otp', verifyOtp);
 router.post('/login', login);
 
-// ─── Health Check ─────────────────────────────────────────────
+// Health Check
 router.get('/ping', (req, res) => {
   res.send('pong');
 });
