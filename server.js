@@ -19,16 +19,26 @@ app.use(helmet()); // Adds security headers
 // ─── Rate Limiting ───────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false
 });
 app.use(limiter);
 
 // ─── CORS Configuration ──────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:5174',
+  'https://noorjobportal.netlify.app'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5174',
-    'https://noorjobportal.netlify.app/' // 🔧 Replace with your actual Netlify domain
-  ],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`❌ CORS blocked for origin: ${origin}`));
+    }
+  },
   methods: ['GET', 'POST'],
   credentials: true
 }));
