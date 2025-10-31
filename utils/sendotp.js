@@ -1,42 +1,33 @@
-// /utils/sendotp.js or /services/sendotp.js
-
 const nodemailer = require('nodemailer');
-require('dotenv').config({ path: '.env.local' });
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-  secure: false, // TLS is auto-enabled on port 587
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT),
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
 
 const sendotp = async (email, otp) => {
-  const mailOptions = {
-    from: `"Job Portal" <${process.env.EMAIL_USER}>`,
+  await transporter.sendMail({
+    from: `"Job Portal" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Your OTP for Email Verification',
+    subject: 'Your OTP Code',
     html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px;">
-        <h2>🔐 Email Verification</h2>
-        <p>Your One-Time Password (OTP) is:</p>
-        <h1 style="color: #2e6c80;">${otp}</h1>
-        <p>This OTP is valid for 5 minutes. Please do not share it with anyone.</p>
+      <div style="font-family: Arial, sans-serif; padding: 10px;">
+        <h2>🔐 Your OTP Code</h2>
+        <p>Hello,</p>
+        <p>Your one-time password is:</p>
+        <h3 style="color: #007bff;">${otp}</h3>
+        <p>This OTP will expire in 5 minutes.</p>
+        <p>If you did not request this, please ignore this email.</p>
         <br>
-        <p>Thanks,<br>Job Portal Team</p>
+        <p>— Job Portal Team</p>
       </div>
     `
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`📧 OTP email sent to ${email}`);
-  } catch (err) {
-    console.error(`❌ Failed to send OTP to ${email}:`, err.message);
-    throw new Error('Failed to send OTP email');
-  }
+  });
 };
 
 module.exports = sendotp;

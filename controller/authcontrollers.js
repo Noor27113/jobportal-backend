@@ -26,7 +26,14 @@ const register = async (req, res) => {
       [name.trim(), email.trim(), phone.trim(), hashedPassword, false, otp, otpExpires]
     );
 
-    await sendotp(email.trim(), otp);
+    try {
+      await sendotp(email.trim(), otp);
+      console.log(`📧 OTP sent to ${email.trim()}`);
+    } catch (emailErr) {
+      console.error('❌ Failed to send OTP email:', emailErr.message);
+      return res.status(500).json({ success: false, message: 'User created but OTP email failed' });
+    }
+
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Registration error:', err.message);
@@ -111,7 +118,14 @@ const resendOtp = async (req, res) => {
       [otp, otpExpires, email.trim()]
     );
 
-    await sendotp(email.trim(), otp);
+    try {
+      await sendotp(email.trim(), otp);
+      console.log(`📧 Resent OTP to ${email.trim()}`);
+    } catch (emailErr) {
+      console.error('❌ Failed to resend OTP email:', emailErr.message);
+      return res.status(500).json({ success: false, message: 'OTP updated but email failed' });
+    }
+
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error('❌ Resend OTP error:', err.message);
