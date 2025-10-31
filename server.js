@@ -1,71 +1,68 @@
-// 🌐 Environment Setup
-require('dotenv').Config({
-  path: process.env.NODE_ENV === 'production' ? '.env.railway' : '.env.local'
-});
-console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+// server.js
 
-// 🚀 Core Imports
+require('dotenv').config({ path: '.env.local' });
+
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
 const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+
 const db = require('./config/db');
 const authRoutes = require('./routes/authroutes');
 
 const app = express();
 
-// 🔐 CORS Setup for Netlify Frontend
+// ─── Security Middleware ─────────────────────────────────────
+app.use(helmet()); // Adds security headers
+
+// ─── Rate Limiting ───────────────────────────────────────────
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
+// ─── CORS Configuration ──────────────────────────────────────
 app.use(cors({
-  origin: 'https://noorjobportal.netlify.app',
+  origin: [
+    'http://localhost:5174',
+    'https://noorjobportal.netlify.app/' // 🔧 Replace with your actual Netlify domain
+  ],
+  methods: ['GET', 'POST'],
   credentials: true
 }));
 
-// 🛡️ Middleware Stack
-app.use(helmet());
+// ─── Middleware ──────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// 📋 Request Logger
+// ─── Global Request Logger ───────────────────────────────────
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.originalUrl}`);
+  console.log(`📡 Incoming request: ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// 🔍 Health Check Route
+// ─── Health Check ────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.send('Job Portal Backend is Live');
+  res.send('✅ Job Portal Backend is Live');
 });
 
-// 🔐 Auth Routes
+// ─── Routes ──────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 
-// ❌ 404 Handler
+// ─── 404 Handler ─────────────────────────────────────────────
 app.use((req, res) => {
+  console.warn(`❌ Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     status: 'error',
     message: `Route not found: ${req.method} ${req.originalUrl}`
   });
 });
 
-// 💥 Central Error Handler
-app.use((err, req, res, next) => {
-  console.error('Internal error:', err.stack);
-  res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-});
-
-// 🧪 MySQL Connection Test
-db.getConnection()
-  .then(conn => {
-    console.log(`Connected to MySQL via pool: ${process.env.DB_HOST}`);
-    conn.release();
-  })
-  .catch(err => {
-    console.log('MySQL pool connection failed:', err.message);
-  });
-
-// 🚀 Server Start
-const PORT = process.env.PORT || 5000;
+// ─── Server Start ────────────────────────────────────────────
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
