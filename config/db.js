@@ -11,7 +11,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   ssl: process.env.DB_HOST !== 'localhost'
-    ? { rejectUnauthorized: true }
+    ? { rejectUnauthorized: false } // ✅ Accept self-signed cert
     : undefined
 });
 
@@ -24,4 +24,4 @@ pool.getConnection((err, conn) => {
   }
 });
 
-module.exports = pool.promise(); // ✅ Keeps your original promise-based usage
+module.exports = pool.promise();
