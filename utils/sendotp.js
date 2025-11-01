@@ -1,18 +1,20 @@
 const nodemailer = require('nodemailer');
 
+// ─── Transporter Setup ─────────────────────────────────────
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT, 10),
-  secure: false,
+  host: process.env.EMAIL_HOST, // smtp.gmail.com
+  port: parseInt(process.env.EMAIL_PORT, 10), // 587
+  secure: false, // TLS over port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false // ✅ Accept Railway's self-signed cert
   }
 });
 
+// ─── OTP Email Sender ──────────────────────────────────────
 const sendotp = async (email, otp) => {
   try {
     await transporter.sendMail({

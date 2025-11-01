@@ -1,5 +1,3 @@
-// server.js
-
 require('dotenv').config({ path: '.env.local' });
 
 const express = require('express');
@@ -14,11 +12,11 @@ const authRoutes = require('./routes/authroutes');
 const app = express();
 
 // ─── Security Middleware ─────────────────────────────────────
-app.use(helmet()); // Adds security headers
+app.use(helmet());
 
 // ─── Rate Limiting ───────────────────────────────────────────
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false
@@ -36,7 +34,8 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`❌ CORS blocked for origin: ${origin}`));
+      console.warn(`❌ CORS blocked for origin: ${origin}`);
+      callback(new Error(`CORS blocked for origin: ${origin}`));
     }
   },
   methods: ['GET', 'POST'],
