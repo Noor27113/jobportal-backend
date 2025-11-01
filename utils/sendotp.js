@@ -1,20 +1,18 @@
 const nodemailer = require('nodemailer');
 
-// ─── Transporter Setup ─────────────────────────────────────
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST, // smtp.gmail.com
-  port: parseInt(process.env.EMAIL_PORT, 10), // 587
-  secure: false, // TLS over port 587
+  host: process.env.EMAIL_HOST,
+  port: parseInt(process.env.EMAIL_PORT, 10),
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false // ✅ Accept Railway's self-signed cert
+    rejectUnauthorized: false
   }
 });
 
-// ─── OTP Email Sender ──────────────────────────────────────
 const sendotp = async (email, otp) => {
   try {
     await transporter.sendMail({
@@ -22,15 +20,15 @@ const sendotp = async (email, otp) => {
       to: email,
       subject: 'Your OTP Code',
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
-          <h2 style="color: #333;">🔐 Your OTP Code</h2>
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>🔐 Your OTP Code</h2>
           <p>Hello,</p>
           <p>Your one-time password is:</p>
-          <h3 style="color: #007bff; font-size: 24px;">${otp}</h3>
+          <h3 style="color: #007bff;">${otp}</h3>
           <p>This OTP will expire in 5 minutes.</p>
           <p>If you did not request this, please ignore this email.</p>
           <br>
-          <p style="color: #555;">— Job Portal Team</p>
+          <p>— Job Portal Team</p>
         </div>
       `
     });
