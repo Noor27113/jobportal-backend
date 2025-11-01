@@ -1,10 +1,9 @@
-// backend/utils/sendotp.js
-
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendotp = async (email, otp) => {
   try {
+    console.log('🔑 RESEND_API_KEY:', process.env.RESEND_API_KEY); // Debug
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
@@ -15,7 +14,6 @@ const sendotp = async (email, otp) => {
           <p>Your one-time password is:</p>
           <h3 style="color: #007bff;">${otp}</h3>
           <p>This OTP will expire in 5 minutes.</p>
-          <p>If you did not request this, please ignore this email.</p>
           <br>
           <p>— Job Portal Team</p>
         </div>
