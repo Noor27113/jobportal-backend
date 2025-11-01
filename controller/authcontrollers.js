@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const sendotp = require('../utils/sendotp');
 const dayjs = require('dayjs');
 
-// ─── Register ─────────────────────────────────────────────────
 const register = async (req, res) => {
   const { name, email, phone, password } = req.body;
   if (!name || !email || !phone || !password) {
@@ -27,7 +26,6 @@ const register = async (req, res) => {
     );
 
     console.log('✅ User inserted into DB');
-
     await sendotp(email.trim(), otp);
 
     return res.status(200).json({ success: true });
@@ -37,7 +35,6 @@ const register = async (req, res) => {
   }
 };
 
-// ─── Verify OTP ───────────────────────────────────────────────
 const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
@@ -51,30 +48,15 @@ const verifyOtp = async (req, res) => {
     );
     const user = rows[0];
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (user.isVerified) return res.status(400).json({ success: false, message: 'Email already verified' });
+    if (!user.otp || !user.otpExpires) return res.status(400).json({ success: false, message: 'OTP missing or used' });
 
-    if (user.isVerified) {
-      return res.status(400).json({ success: false, message: 'Email already verified' });
-    }
-
-    if (!user.otp || !user.otpExpires) {
-      return res.status(400).json({ success: false, message: 'OTP already used or missing' });
-    }
-
-    const enteredOtp = String(otp).trim();
-    const storedOtp = String(user.otp).trim();
+    const isMatch = otp.trim() === String(user.otp).trim();
     const isExpired = dayjs().isAfter(dayjs(user.otpExpires));
-    const isMatch = enteredOtp === storedOtp;
 
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Incorrect OTP' });
-    }
-
-    if (isExpired) {
-      return res.status(400).json({ success: false, message: 'OTP expired' });
-    }
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Incorrect OTP' });
+    if (isExpired) return res.status(400).json({ success: false, message: 'OTP expired' });
 
     await db.query(
       'UPDATE users SET isVerified = true, otp = NULL, otpExpires = NULL WHERE email = ?',
@@ -88,18 +70,12 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-// ─── Resend OTP ───────────────────────────────────────────────
 const resendOtp = async (req, res) => {
   const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' });
-  }
+  if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
 
   try {
-    const [rows] = await db.query(
-      'SELECT isVerified FROM users WHERE email = ?',
-      [email.trim()]
-    );
+    const [rows] = await db.query('SELECT isVerified FROM users WHERE email = ?', [email.trim()]);
     const user = rows[0];
 
     if (!user || user.isVerified) {
@@ -124,7 +100,6 @@ const resendOtp = async (req, res) => {
   }
 };
 
-// ─── Login ────────────────────────────────────────────────────
 const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -132,24 +107,14 @@ const login = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM users WHERE email = ?',
-      [email.trim()]
-    );
+    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email.trim()]);
     const user = rows[0];
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    if (!user.isVerified) {
-      return res.status(403).json({ success: false, message: 'Email not verified' });
-    }
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user.isVerified) return res.status(403).json({ success: false, message: 'Email not verified' });
 
     const isMatch = await bcrypt.compare(password.trim(), user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
     return res.status(200).json({ success: true });
   } catch (err) {
@@ -158,9 +123,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = {
-  register,
-  verifyOtp,
-  resendOtp,
-  login
-};
+module.exports = { register, verifyOtp, resendOtp, login };

@@ -3,7 +3,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendotp = async (email, otp) => {
   try {
-    console.log('🔑 RESEND_API_KEY:', process.env.RESEND_API_KEY); // Debug
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
